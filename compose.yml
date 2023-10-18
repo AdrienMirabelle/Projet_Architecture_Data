@@ -12,5 +12,16 @@ services:
     networks:
       - cassandra-net
 
+  spark:
+    image: bitnami/spark:latest
+    container_name: spark-node
+    environment:
+      - SPARK_MODE=master
+      - SPARK_MASTER_PORT=7077
+    ports:
+      - "4040:4040"
+    networks:
+      - cassandra-net
+
 networks:
   cassandra-net:

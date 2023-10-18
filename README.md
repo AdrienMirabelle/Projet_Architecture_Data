@@ -4,4 +4,4 @@
 docker-compose up
 
 # Lancer dans un autre terminal pour accéder au cqls de cassandra
-$ docker run -it --network=projet_architecture_data_cassandra-net --rm cassandra cqlsh cassandra
+docker run -it --network=projet_architecture_data_cassandra-net --rm cassandra cqlsh cassandra

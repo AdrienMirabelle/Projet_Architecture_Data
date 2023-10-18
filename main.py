@@ -1,5 +1,4 @@
 import os
-import dotenv
 from dotenv import load_dotenv
 
 from googleapiclient.discovery import build
@@ -19,7 +18,6 @@ search_response = youtube.search().list(
     maxResults=10,
     order="date"  # Triez par date pour obtenir les vidéos les plus récentes
 ).execute()
-print(search_response)
 
 
 # Parcourez les résultats et imprimez les titres des vidéos
@@ -31,4 +29,3 @@ for search_result in search_response.get("items", []):
             video = video_info['items'][0]
             title = video['snippet']['title']
             print("Titre de la vidéo :", title)
-
