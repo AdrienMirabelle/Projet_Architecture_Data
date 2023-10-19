@@ -24,25 +24,31 @@ services:
       - cassandra-net
 
   zookeeper:
-    image: bitnami/zookeeper:latest
+    image: docker.io/bitnami/zookeeper:lastest
     container_name: zookeeper-node
-    environment:
-      - ALLOW_ANONYMOUS_LOGIN=yes
     ports:
       - "2181:2181"
-    networks:
-      - cassandra-net
-
-  kafka:
-    image: bitnami/kafka:latest
-    container_name: kafka-node
+    volumes:
+      - "zookeeper_data:/bitnami"
     environment:
-      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
-      - ALLOW_PLAINTEXT_LISTENER=yes
+      - ALLOW_ANONYMOUS_LOGIN=yes
+  kafka:
+    image: docker.io/bitnami/kafka:latest
+    container_name: kafka-node
     ports:
       - "9092:9092"
-    networks:
-      - cassandra-net 
+    volumes:
+      - "kafka_data:/bitnami"
+    environment:
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
+    depends_on:
+      - zookeeper
+
+volumes:
+  zookeeper_data:
+    driver: local
+  kafka_data:
+    driver: local
 
 networks:
   cassandra-net:
