@@ -1,17 +1,20 @@
 import os
-from dotenv import load_dotenv
+# from dotenv import load_dotenv
 from googleapiclient.discovery import build
 from confluent_kafka import Producer
 
 # Connexion à l'API YouTube Data
-load_dotenv()
-API_KEY = os.getenv("API_KEY")
+# load_dotenv()
+# API_KEY = os.getenv("API_KEY")
+
+API_KEY= "AIzaSyA-u35TFgqq6kNfy5-CdJ3Pzt_zQgLnq2w"
 
 # Créez une instance de l'API YouTube Data
 youtube = build("youtube", "v3", developerKey=API_KEY)
 
 # Configuration du producteur Kafka
-producer = Producer({'bootstrap.servers': 'kafka-node:9092'})
+producer = Producer({'bootstrap.servers': 'localhost:9092'})
+
 
 # Utilisez la méthode search.list pour obtenir les dernières vidéos
 search_response = youtube.search().list(

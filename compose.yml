@@ -38,6 +38,7 @@ services:
   kafka:
     image: confluentinc/cp-kafka:latest
     container_name: kafka-node
+    hostname : kafka-node
     networks:
       - cassandra-net
     environment:
@@ -47,6 +48,15 @@ services:
     ports:
       - "9092:9092"
 
+  python-app:
+    build:
+      context: .  # Le contexte est le répertoire courant où se trouve votre Dockerfile
+      dockerfile: Dockerfile  # Spécifiez le nom de votre Dockerfile s'il est différent de 'Dockerfile'
+    container_name: python-app
+    depends_on:
+      - kafka  # Si votre script Python dépend de Kafka
+    networks:
+      - cassandra-net
 
 volumes:
   zookeeper_data:
