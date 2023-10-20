@@ -10,7 +10,7 @@ services:
     ports:
       - "9042:9042"
     networks:
-      - cassandra-net
+      - app-net
 
   spark-master:
     image: bitnami/spark:latest
@@ -21,7 +21,7 @@ services:
     ports:
       - "4040:4040"
     networks:
-      - cassandra-net
+      - app-net
 
   spark-worker-1:
     image: bitnami/spark:latest
@@ -30,7 +30,7 @@ services:
       - SPARK_MODE=worker
       - SPARK_MASTER=spark-master-node:7077
     networks:
-      - cassandra-net
+      - app-net
 
   spark-worker-2:
     image: bitnami/spark:latest
@@ -39,7 +39,7 @@ services:
       - SPARK_MODE=worker
       - SPARK_MASTER=spark-master-node:7077
     networks:
-      - cassandra-net
+      - app-net
 
   spark-worker-3:
     image: bitnami/spark:latest
@@ -48,42 +48,40 @@ services:
       - SPARK_MODE=worker
       - SPARK_MASTER=spark-master-node:7077
     networks:
-      - cassandra-net
-
+      - app-net
+  
   zookeeper:
     image: docker.io/bitnami/zookeeper:3.9
-    container_name: zookeeper-node
-    networks:
-      - cassandra-net
     ports:
       - "2181:2181"
     volumes:
       - "zookeeper_data:/bitnami"
     environment:
       - ALLOW_ANONYMOUS_LOGIN=yes
-
-  kafka:
-    image: confluentinc/cp-kafka:latest
-    container_name: kafka-node
-    hostname : kafka-node
+    container_name: zookeeper-node
     networks:
-      - cassandra-net
-    environment:
-      - KAFKA_ZOOKEEPER_CONNECT=zookeeper-node:2181
-      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka-node:9092
-      - ALLOW_PLAINTEXT_LISTENER=yes
+      - app-net
+      
+  kafka:
+    image: 'bitnami/kafka:latest'
     ports:
-      - "9092:9092"
+      - '9092:9092'
+    container_name: kafka-node
+    environment:
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
+      - ALLOW_PLAINTEXT_LISTENER=yes
+    depends_on:
+      - zookeeper
+    networks:
+      - app-net
 
   python-app:
     build:
       context: .  # Le contexte est le répertoire courant où se trouve votre Dockerfile
       dockerfile: Dockerfile  # Spécifiez le nom de votre Dockerfile s'il est différent de 'Dockerfile'
     container_name: python-app
-    depends_on:
-      - kafka  # Si votre script Python dépend de Kafka
     networks:
-      - cassandra-net
+      - app-net
 
 volumes:
   zookeeper_data:
@@ -92,4 +90,4 @@ volumes:
     driver: local
 
 networks:
-  cassandra-net:
+  app-net:
