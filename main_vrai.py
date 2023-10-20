@@ -1,6 +1,7 @@
 import os
 from googleapiclient.discovery import build
 from confluent_kafka import Producer, Consumer, KafkaError
+from cassandra.cluster import Cluster
 
 # Connexion à l'API YouTube Data
 API_KEY = "AIzaSyA-u35TFgqq6kNfy5-CdJ3Pzt_zQgLnq2w"
@@ -28,6 +29,10 @@ consumer_config = {
     'auto.offset.reset': 'earliest'  # Réinitialiser l'offset pour lire depuis le début
 }
 
+# Configuration Cassandra
+cassandra_host = '172.23.0.7'
+cassandra_keyspace = 'python_api-keyspace'
+
 # Créer un producteur Kafka
 producer = Producer(producer_config)
 
@@ -52,16 +57,41 @@ producer.flush()
 # S'abonner à un topic
 consumer.subscribe(['python-api'])
 
-# Lecture Kafka
-while True:
-    msg = consumer.poll(1.0)
+''' PARTIE CASSANDRA '''
 
-    if msg is None:
-        continue
-    if msg.error():
-        if msg.error().code() == KafkaError._PARTITION_EOF:
-            print('Fin de la partition atteinte, consommation terminée.')
-        else:
-            print('Erreur de consommation: {}'.format(msg.error()))
-    else:
-        print('Reçu un message: key={}, value={}'.format(msg.key(), msg.value()))
+# Configuration Cassandra
+cluster = Cluster([cassandra_host])
+session = cluster.connect(cassandra_keyspace)
+
+# Créez un keyspace
+keyspace_query = f"""
+CREATE KEYSPACE IF NOT EXISTS {cassandra_keyspace}
+WITH replication = {{
+    'class': 'SimpleStrategy',
+    'replication_factor': 3
+}};
+"""
+session.execute(keyspace_query)
+
+# Créez une table
+table_query = f"""
+CREATE TABLE IF NOT EXISTS videos (
+    id uuid PRIMARY KEY,
+    title text
+);
+"""
+session.execute(table_query)
+
+# Consommer les titres des vidéos depuis Kafka et les stocker dans Cassandra
+for message in consumer:
+    video_id = message.key.decode('utf-8')
+    title = message.value.decode('utf-8')
+    # Insérer les données dans Cassandra
+    insert_query = f"INSERT INTO videos (id, title) VALUES (uuid(), %s);"
+    session.execute(insert_query, (title,))
+
+# Fermer les connexions
+producer.close()
+consumer.close()
+session.shutdown()
+cluster.shutdown()

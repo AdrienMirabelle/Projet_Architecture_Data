@@ -20,3 +20,9 @@ kafka-consumer-groups.sh --list --bootstrap-server kafka-node:9092
 
 # Récupérer l'addresse
 docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' kafka-node
+
+# Afficher le contenu du topic de kafka
+kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic python-api --from-beginning
+
+# Rentrer dans le container Cassandra
+docker exec -it cassandra-node cqlsh "adresse IP du container"
