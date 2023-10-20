@@ -14,5 +14,9 @@ docker exec -it "nom container" /bin/bash
 
 # Lister les topics de kafka
 kafka-topics.sh --list --bootstrap-server kafka-node:9092
+
 # Lister les consumers de kafka
 kafka-consumer-groups.sh --list --bootstrap-server kafka-node:9092
+
+# Récupérer l'addresse
+docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' kafka-node
